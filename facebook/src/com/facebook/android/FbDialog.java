@@ -183,7 +183,12 @@ public class FbDialog extends Dialog {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            mSpinner.dismiss();
+    		try {
+                mSpinner.dismiss();
+            } catch (IllegalArgumentException e) {
+    			Log.d("Facebook", "Dialog not attached to window.", e);
+    		}
+
             /* 
              * Once webview is fully loaded, set the mContent background to be transparent
              * and make visible the 'x' image. 
@@ -193,4 +198,15 @@ public class FbDialog extends Dialog {
             mCrossImage.setVisibility(View.VISIBLE);
         }
     }
+
+	@Override
+	public void dismiss() {
+		try {
+			super.dismiss();
+		} catch (IllegalArgumentException e) {
+			Log.d("Facebook", "Dialog not attached to window.", e);
+		}
+	}
+    
+    
 }
