@@ -113,7 +113,7 @@ public class FbDialog extends Dialog {
 
     private void setUpWebView(int margin) {
         LinearLayout webViewContainer = new LinearLayout(getContext());
-        mWebView = new WebView(getContext());
+        mWebView = new SafeDialogWebView(getContext());
         mWebView.setVerticalScrollBarEnabled(false);
         mWebView.setHorizontalScrollBarEnabled(false);
         mWebView.setWebViewClient(new FbDialog.FbWebViewClient());
@@ -207,7 +207,6 @@ public class FbDialog extends Dialog {
 		} catch (IllegalArgumentException e) {
 			Log.d("Facebook", "Dialog not attached to window.", e);
 		}
-	}
-    
+    }
     
 }
