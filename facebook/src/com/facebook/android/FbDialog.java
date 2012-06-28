@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.WindowManager.BadTokenException;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -178,7 +179,13 @@ public class FbDialog extends Dialog {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             Util.logd("Facebook-WebView", "Webview loading URL: " + url);
             super.onPageStarted(view, url, favicon);
-            mSpinner.show();
+            try
+            {
+                mSpinner.show();
+            } catch (BadTokenException e)
+            {
+                Log.d("Facebook", "Error showing ProgressDialog");
+            }
         }
 
         @Override
