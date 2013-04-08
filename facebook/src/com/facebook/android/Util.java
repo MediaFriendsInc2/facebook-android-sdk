@@ -16,15 +16,36 @@
 
 package com.facebook.android;
 
-import android.app.AlertDialog.Builder;
-import android.content.Context;
-import android.os.Bundle;
-import com.facebook.internal.Utility;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.net.*;
+import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.Signature;
+import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
+
+import com.facebook.internal.Utility;
 
 /**
  * Utility class supporting the Facebook Object.
@@ -305,5 +326,27 @@ public final class Util {
         alertBuilder.setTitle(title);
         alertBuilder.setMessage(text);
         alertBuilder.create().show();
+    }
+    
+    public static void logKeyHash(Context context)
+    {
+        try
+        {
+            PackageInfo info =
+                    context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures)
+            {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (NameNotFoundException e)
+        {
+            Log.d("FacebookUtils", "Exception", e);
+        } catch (NoSuchAlgorithmException e)
+        {
+            Log.d("FacebookUtils", "Exception", e);
+
+        }
     }
 }
