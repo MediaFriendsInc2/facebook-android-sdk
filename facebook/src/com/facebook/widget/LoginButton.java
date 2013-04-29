@@ -16,6 +16,9 @@
 
 package com.facebook.widget;
 
+import java.util.Collections;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -29,15 +32,19 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import com.facebook.*;
+
+import com.facebook.FacebookException;
+import com.facebook.Request;
+import com.facebook.Response;
+import com.facebook.Session;
+import com.facebook.SessionDefaultAudience;
+import com.facebook.SessionLoginBehavior;
+import com.facebook.SessionState;
 import com.facebook.android.R;
-import com.facebook.model.GraphUser;
 import com.facebook.internal.SessionAuthorizationType;
 import com.facebook.internal.SessionTracker;
 import com.facebook.internal.Utility;
-
-import java.util.Collections;
-import java.util.List;
+import com.facebook.model.GraphUser;
 
 /**
  * A Log In/Log Out button that maintains session state and logs
@@ -63,6 +70,7 @@ public class LoginButton extends Button {
     private String logoutText;
     private UserInfoChangedCallback userInfoChangedCallback;
     private Fragment parentFragment;
+    private LoginActionListener loginActionListener = null;
     private LoginButtonProperties properties = new LoginButtonProperties();
 
     static class LoginButtonProperties {
@@ -461,6 +469,16 @@ public class LoginButton extends Button {
         setButtonText();
     }
 
+    public LoginActionListener getLoginActionListener()
+    {
+        return loginActionListener;
+    }
+
+    public void setLoginActionListener(LoginActionListener loginActionListener)
+    {
+        this.loginActionListener = loginActionListener;
+    }
+
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
@@ -606,6 +624,7 @@ public class LoginButton extends Button {
                            .setCancelable(true)
                            .setPositiveButton(logout, new DialogInterface.OnClickListener() {
                                public void onClick(DialogInterface dialog, int which) {
+                                    loginActionListener.onLoginAction(false);
                                    openSession.closeAndClearTokenInformation();
                                }
                            })
@@ -615,6 +634,7 @@ public class LoginButton extends Button {
                     openSession.closeAndClearTokenInformation();
                 }
             } else {
+                loginActionListener.onLoginAction(true);
                 Session currentSession = sessionTracker.getSession();
                 if (currentSession == null || currentSession.getState().isClosed()) {
                     sessionTracker.setSession(null);
@@ -661,6 +681,11 @@ public class LoginButton extends Button {
             }
         }
     };
+
+    public interface LoginActionListener
+    {
+        public void onLoginAction(boolean loggingIn);
+    }
 
     void handleError(Exception exception) {
         if (properties.onErrorListener != null) {
