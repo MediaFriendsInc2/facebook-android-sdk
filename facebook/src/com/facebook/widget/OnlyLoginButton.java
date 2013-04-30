@@ -549,9 +549,9 @@ public class OnlyLoginButton extends Button {
 
     private void fetchUserInfo() {
         if (fetchUserInfo) {
-            fetchUserInfo = false;
             final Session currentSession = sessionTracker.getOpenSession();
             if (currentSession != null) {
+                fetchUserInfo = false;
                 if (currentSession != userInfoSession) {
                     Request request = Request.newMeRequest(currentSession, new Request.GraphUserCallback() {
                         @Override
