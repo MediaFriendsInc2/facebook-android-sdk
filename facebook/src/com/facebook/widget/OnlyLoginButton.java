@@ -20,9 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.support.v4.app.Fragment;
@@ -57,17 +55,15 @@ import com.facebook.model.GraphUser;
  * Developers can override the use of the active session by calling
  * the {@link #setSession(com.facebook.Session)} method.
  */
-public class LoginButton extends Button {
+public class OnlyLoginButton extends Button {
 
-    private static final String TAG = LoginButton.class.getName();
+    private static final String TAG = OnlyLoginButton.class.getName();
     private String applicationId = null;
     private SessionTracker sessionTracker;
     private GraphUser user = null;
     private Session userInfoSession = null; // the Session used to fetch the current user info
-    private boolean confirmLogout;
     private boolean fetchUserInfo;
     private String loginText;
-    private String logoutText;
     private UserInfoChangedCallback userInfoChangedCallback;
     private Fragment parentFragment;
     private LoginButtonProperties properties = new LoginButtonProperties();
@@ -189,7 +185,7 @@ public class LoginButton extends Button {
      *
      * @see View#View(Context)
      */
-    public LoginButton(Context context) {
+    public OnlyLoginButton(Context context) {
         super(context);
         initializeActiveSessionWithCachedToken(context);
         // since onFinishInflate won't be called, we need to finish initialization ourselves
@@ -201,7 +197,7 @@ public class LoginButton extends Button {
      *
      * @see View#View(Context, AttributeSet)
      */
-    public LoginButton(Context context, AttributeSet attrs) {
+    public OnlyLoginButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         if (attrs.getStyleAttribute() == 0) {
@@ -239,7 +235,7 @@ public class LoginButton extends Button {
      *
      * @see View#View(Context, AttributeSet, int)
      */
-    public LoginButton(Context context, AttributeSet attrs, int defStyle) {
+    public OnlyLoginButton(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         parseAttributes(attrs);
         initializeActiveSessionWithCachedToken(context);
@@ -524,21 +520,13 @@ public class LoginButton extends Button {
 
     private void parseAttributes(AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.com_facebook_login_view);
-        confirmLogout = a.getBoolean(R.styleable.com_facebook_login_view_confirm_logout, true);
-        fetchUserInfo = a.getBoolean(R.styleable.com_facebook_login_view_fetch_user_info, true);
         loginText = a.getString(R.styleable.com_facebook_login_view_login_text);
-        logoutText = a.getString(R.styleable.com_facebook_login_view_logout_text);
         a.recycle();
     }
 
-    private void setButtonText() {
-        if (sessionTracker != null && sessionTracker.getOpenSession() != null) {
-            setText((logoutText != null) ? logoutText :
-                    getResources().getString(R.string.com_facebook_loginview_log_out_button));
-        } else {
-            setText((loginText != null) ? loginText :
-                    getResources().getString(R.string.com_facebook_loginview_log_in_button));
-        }
+    private void setButtonText()
+    {
+        setText((loginText != null) ? loginText : getResources().getString(R.string.com_facebook_loginview_log_in_button));
     }
 
     private boolean initializeActiveSessionWithCachedToken(Context context) {
@@ -561,6 +549,7 @@ public class LoginButton extends Button {
 
     private void fetchUserInfo() {
         if (fetchUserInfo) {
+            fetchUserInfo = false;
             final Session currentSession = sessionTracker.getOpenSession();
             if (currentSession != null) {
                 if (currentSession != userInfoSession) {
@@ -594,33 +583,12 @@ public class LoginButton extends Button {
 
         @Override
         public void onClick(View v) {
+            fetchUserInfo = true;
             Context context = getContext();
             final Session openSession = sessionTracker.getOpenSession();
             if (openSession != null) {
-                // If the Session is currently open, it must mean we need to log out
-                if (confirmLogout) {
-                    // Create a confirmation dialog
-                    String logout = getResources().getString(R.string.com_facebook_loginview_log_out_action);
-                    String cancel = getResources().getString(R.string.com_facebook_loginview_cancel_action);
-                    String message;
-                    if (user != null && user.getName() != null) {
-                        message = String.format(getResources().getString(R.string.com_facebook_loginview_logged_in_as), user.getName());
-                    } else {
-                        message = getResources().getString(R.string.com_facebook_loginview_logged_in_using_facebook);
-                    }
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setMessage(message)
-                           .setCancelable(true)
-                           .setPositiveButton(logout, new DialogInterface.OnClickListener() {
-                               public void onClick(DialogInterface dialog, int which) {
-                                   openSession.closeAndClearTokenInformation();
-                               }
-                           })
-                           .setNegativeButton(cancel, null);
-                    builder.create().show();
-                } else {
-                    openSession.closeAndClearTokenInformation();
-                }
+                // If the Session is currently open, jsut fetch user info!
+                fetchUserInfo();
             } else {
                 Session currentSession = sessionTracker.getSession();
                 if (currentSession == null || currentSession.getState().isClosed()) {
@@ -668,11 +636,6 @@ public class LoginButton extends Button {
             }
         }
     };
-
-    public interface LoginActionListener
-    {
-        public void onLoginAction(boolean loggingIn);
-    }
 
     void handleError(Exception exception) {
         if (properties.onErrorListener != null) {
