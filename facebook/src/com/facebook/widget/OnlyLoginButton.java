@@ -63,7 +63,6 @@ public class OnlyLoginButton extends Button {
     private GraphUser user = null;
     private Session userInfoSession = null; // the Session used to fetch the current user info
     private boolean fetchUserInfo;
-    private String loginText;
     private UserInfoChangedCallback userInfoChangedCallback;
     private Fragment parentFragment;
     private LoginButtonProperties properties = new LoginButtonProperties();
@@ -218,10 +217,9 @@ public class OnlyLoginButton extends Button {
                 // cannot use a drawable in edit mode, so setting the background color instead
                 // of a background resource.
                 this.setBackgroundColor(getResources().getColor(R.color.com_facebook_blue));
-                // hardcoding in edit mode as getResources().getString() doesn't seem to work in IntelliJ
-                loginText = "Log in";
             } else {
-                this.setBackgroundResource(R.drawable.com_facebook_loginbutton_blue);
+                //this.setBackgroundResource(R.drawable.com_facebook_loginbutton_blue);
+                this.setBackgroundResource(R.drawable.com_facebook_button_only_login);
             }
         }
         parseAttributes(attrs);
@@ -520,13 +518,12 @@ public class OnlyLoginButton extends Button {
 
     private void parseAttributes(AttributeSet attrs) {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.com_facebook_login_view);
-        loginText = a.getString(R.styleable.com_facebook_login_view_login_text);
         a.recycle();
     }
 
     private void setButtonText()
     {
-        setText((loginText != null) ? loginText : getResources().getString(R.string.com_facebook_loginview_log_in_button));
+        setText("");
     }
 
     private boolean initializeActiveSessionWithCachedToken(Context context) {
