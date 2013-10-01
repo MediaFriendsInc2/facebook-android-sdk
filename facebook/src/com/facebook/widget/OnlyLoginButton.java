@@ -63,6 +63,7 @@ public class OnlyLoginButton extends Button {
     private GraphUser user = null;
     private Session userInfoSession = null; // the Session used to fetch the current user info
     private boolean fetchUserInfo;
+    private boolean forceMeRequest;
     private String loginText;
     private String logoutText;
     private UserInfoChangedCallback userInfoChangedCallback;
@@ -559,7 +560,7 @@ public class OnlyLoginButton extends Button {
             final Session currentSession = sessionTracker.getOpenSession();
             if (currentSession != null) {
                 fetchUserInfo = false;
-                if (currentSession != userInfoSession) {
+                if (forceMeRequest || currentSession != userInfoSession) {
                     Request request = Request.newMeRequest(currentSession, new Request.GraphUserCallback() {
                         @Override
                         public void onCompleted(GraphUser me,  Response response) {
@@ -591,6 +592,7 @@ public class OnlyLoginButton extends Button {
         @Override
         public void onClick(View v) {
             fetchUserInfo = true;
+            forceMeRequest = true;
             Context context = getContext();
             final Session openSession = sessionTracker.getOpenSession();
             if (openSession != null) {
