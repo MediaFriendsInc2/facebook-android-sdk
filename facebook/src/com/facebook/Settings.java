@@ -267,7 +267,10 @@ public final class Settings {
         Settings.getExecutor().execute(new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "Publishing Install for " + applicationId);
                 final Response response = Settings.publishInstallAndWaitForResponse(applicationContext, applicationId);
+                Log.d(TAG, "Got Response for: " + response.toString());
+
                 if (callback != null) {
                     // invoke the callback on the main thread.
                     Handler handler = new Handler(Looper.getMainLooper());

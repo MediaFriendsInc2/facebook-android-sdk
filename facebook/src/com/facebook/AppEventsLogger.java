@@ -286,6 +286,8 @@ public class AppEventsLogger {
             throw new IllegalArgumentException("Both context and applicationId must be non-null");
         }
 
+        Log.d(TAG, "Activating app: " + applicationId);
+
         // activateApp supercedes publishInstall in the public API, so we need to explicitly invoke it, since the server
         // can't reliably infer install state for all conditions of an app activate.
         Settings.publishInstallAsync(context, applicationId);
