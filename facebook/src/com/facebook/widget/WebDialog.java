@@ -37,7 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import com.facebook.*;
-import com.facebook.android.*;
+import com.facebook.android.R;
 import com.facebook.internal.Logger;
 import com.facebook.internal.ServerProtocol;
 import com.facebook.internal.Utility;
@@ -51,7 +51,6 @@ import com.facebook.internal.Validate;
 public class WebDialog extends Dialog {
     private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
     private static final String DISPLAY_TOUCH = "touch";
-    private static final String USER_AGENT = "user_agent";
     static final String REDIRECT_URI = "fbconnect://success";
     static final String CANCEL_URI = "fbconnect://cancel";
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
@@ -73,6 +72,7 @@ public class WebDialog extends Dialog {
     public static final int DEFAULT_THEME = android.R.style.Theme_Translucent_NoTitleBar;
 
     private String url;
+    private String expectedRedirectUrl = REDIRECT_URI;
     private OnCompleteListener onCompleteListener;
     private WebView webView;
     private ProgressDialog spinner;
@@ -140,9 +140,10 @@ public class WebDialog extends Dialog {
         parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
 
         parameters.putString(ServerProtocol.DIALOG_PARAM_DISPLAY, DISPLAY_TOUCH);
-        parameters.putString(ServerProtocol.DIALOG_PARAM_TYPE, USER_AGENT);
 
-        Uri uri = Utility.buildUri(ServerProtocol.getDialogAuthority(), ServerProtocol.DIALOG_PATH + action,
+        Uri uri = Utility.buildUri(
+                ServerProtocol.getDialogAuthority(),
+                ServerProtocol.getAPIVersion() + "/" + ServerProtocol.DIALOG_PATH + action,
                 parameters);
         this.url = uri.toString();
         onCompleteListener = listener;
@@ -243,6 +244,19 @@ public class WebDialog extends Dialog {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         setContentView(contentFrameLayout);
+    }
+
+    protected void setExpectedRedirectUrl(String expectedRedirectUrl) {
+        this.expectedRedirectUrl = expectedRedirectUrl;
+    }
+
+    protected Bundle parseResponseUri(String urlString) {
+        Uri u = Uri.parse(urlString);
+
+        Bundle b = Utility.parseUrlQueryString(u.getQuery());
+        b.putAll(Utility.parseUrlQueryString(u.getFragment()));
+
+        return b;
     }
 
     private void calculateSize() {
@@ -346,6 +360,7 @@ public class WebDialog extends Dialog {
                 ViewGroup.LayoutParams.MATCH_PARENT));
         webView.setVisibility(View.INVISIBLE);
         webView.getSettings().setSavePassword(false);
+        webView.getSettings().setSaveFormData(false);
 
         webViewContainer.setPadding(margin, margin, margin, margin);
         webViewContainer.addView(webView);
@@ -358,8 +373,8 @@ public class WebDialog extends Dialog {
         @SuppressWarnings("deprecation")
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Utility.logd(LOG_TAG, "Redirect URL: " + url);
-            if (url.startsWith(WebDialog.REDIRECT_URI)) {
-                Bundle values = Util.parseUrl(url);
+            if (url.startsWith(WebDialog.this.expectedRedirectUrl)) {
+                Bundle values = parseResponseUri(url);
 
                 String error = values.getString("error");
                 if (error == null) {
@@ -572,7 +587,7 @@ public class WebDialog extends Dialog {
     }
 
     /**
-     * Provides a builder that allows construction of an arbitary Facebook web dialog.
+     * Provides a builder that allows construction of an arbitrary Facebook web dialog.
      */
     public static class Builder extends BuilderBase<Builder> {
         /**
@@ -698,7 +713,8 @@ public class WebDialog extends Dialog {
 
         /**
          * Sets the ID of the profile that the story will be published to. If not specified, it
-         * will default to the same profile that the story is being published from.
+         * will default to the same profile that the story is being published from. The ID must be a friend who also
+         * uses your app.
          *
          * @param id Facebook ID of the profile to post to
          * @return the builder
