@@ -21,7 +21,6 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +29,7 @@ import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
